@@ -14,8 +14,7 @@ export const Chat = ({
   chatId: string;
 }) => {
   console.log(chatId);
-  // TODO message format
-  //? message role user / !user
+
   const [messages, setMessages] = useState<Message[]>(chatHistory);
   const [newMessage, setNewMessage] = useState('');
   const [streamResponse, setStreamResponse] = useState('');
@@ -126,7 +125,7 @@ export const Chat = ({
       <section
         ref={messagesContainerRef}
         className={cn(
-          'container overflow-y-auto [&::-webkit-scrollbar-track]:bg-zinc-800',
+          'scrollbar-custom container overflow-y-auto',
           paddingClass
         )}
       >

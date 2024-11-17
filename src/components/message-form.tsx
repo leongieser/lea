@@ -11,15 +11,14 @@ export const MessageForm = () => {
         name="message"
         placeholder="Teach me something new today..."
         className="without-ring flex max-h-[400px] w-full resize-none justify-center overflow-hidden rounded-l-md bg-zinc-900 p-4 text-lg"
-        rows={3}
+        rows={1}
       />
-      <div className="flex h-full grow items-end">
+      <div className="flex h-full grow items-center">
         <button
           type="submit"
-          className="flex h-12 w-12 items-center justify-center text-zinc-50"
+          className="flex h-full w-full items-center justify-center px-4 text-zinc-50 disabled:pointer-events-none disabled:opacity-50"
         >
           <SendHorizontal className="h-6 w-6" />
-
           <span className="sr-only">Send message</span>
         </button>
       </div>

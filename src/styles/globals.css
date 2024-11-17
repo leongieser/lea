@@ -7,3 +7,15 @@
     text-wrap: balance;
   }
 }
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 12px;
+}
+.scrollbar-custom::-webkit-scrollbar-track {
+  @apply bg-none;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  @apply bg-zinc-400;
+  border-radius: 12px;
+}
