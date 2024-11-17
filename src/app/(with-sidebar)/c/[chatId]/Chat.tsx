@@ -34,8 +34,9 @@ import { SendHorizontal, StopCircleIcon } from 'lucide-react';
  * in memory client side chat history.
  * Refreshing the page will cause the server component to get the updated chat history and pass it into the client component
  *
- * i ran into some scrollbar chaos in the end and really did not have the nerve to fix it. so
+ * i ran into some scrollbar chaos in the end and really did not have the nerve to fix it.
  */
+
 export const Chat = ({
   chatHistory,
   chatId,
@@ -52,19 +53,6 @@ export const Chat = ({
   const [controller, setController] = useState<AbortController | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const hasSentInitalMessage = useRef(false);
-
-  const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, streamResponse]);
 
   useLayoutEffect(() => {
     if (messagesContainerRef.current) {
@@ -92,6 +80,19 @@ export const Chat = ({
     };
   }, []);
 
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, streamResponse]);
+
   useEffect(() => {
     const initConversation = async () => {
       if (messages.length > 1 || hasSentInitalMessage.current) return;
@@ -102,12 +103,9 @@ export const Chat = ({
       setController(abortController);
 
       try {
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          body: JSON.stringify({
-            message: messages[0].content,
-            chatId,
-          }),
+        const response = await fetch(`/api/chat/${chatId}`, {
+          method: 'GET',
+
           headers: {
             'Content-Type': 'application/json',
           },
@@ -149,7 +147,7 @@ export const Chat = ({
     };
 
     initConversation();
-  }, [messages, chatId]);
+  }, [chatHistory, chatId]);
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -166,7 +164,7 @@ export const Chat = ({
 
     setNewMessage('');
 
-    const response = await fetch('/api/chat', {
+    const response = await fetch(`/api/chat/${chatId}`, {
       method: 'POST',
       body: JSON.stringify({
         message: newMessage,
@@ -220,7 +218,7 @@ export const Chat = ({
   };
 
   return (
-    <main className="flex w-full flex-col gap-4 bg-zinc-800 px-4 py-4 md:px-0">
+    <main className="flex min-h-screen w-full flex-grow flex-col gap-4 bg-zinc-800 px-4 py-4 md:px-0">
       <section
         ref={messagesContainerRef}
         className={cn(
