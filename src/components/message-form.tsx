@@ -5,7 +5,7 @@ export const MessageForm = () => {
   return (
     <form
       action={createChat}
-      className="mx-auto flex w-full max-w-2xl self-stretch rounded-md bg-zinc-900 text-zinc-100"
+      className="mx-auto flex w-full max-w-screen-sm self-stretch rounded-md bg-zinc-900 text-zinc-100"
     >
       <textarea
         name="message"
