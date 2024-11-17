@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
+    "YoavBls.pretty-ts-errors",
+    "wix.vscode-import-cost",
+    "usernamehw.errorlens",
+    "SimonSiefke.svg-preview",
+    "chriskirknielsen.visubezier",
+    "csstools.postcss",
+    "EditorConfig.EditorConfig",
+    "aaron-bond.better-comments"
+  ]
+}

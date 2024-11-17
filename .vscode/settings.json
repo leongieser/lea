@@ -1,0 +1,46 @@
+{
+  "typescript.preferences.autoImportFileExcludePatterns": [
+    // useRouter should be imported from `next/navigation` instead of `next/router`
+    "next/router.d.ts",
+    "next/dist/client/router.d.ts",
+    // give priority for Link to next/link instead of lucide-react
+    "lucide-react"
+  ],
+  "explorer.sortOrder": "filesFirst",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "search.exclude": {
+    "package-lock.json": true
+  },
+  "eslint.enable": true,
+  "prettier.enable": true,
+  "prettier.requireConfig": true,
+  "editor.formatOnSave": true,
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+  "prettier.configPath": ".prettierrc",
+  "prettier.ignorePath": ".gitignore",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "workbench.editor.customLabels.patterns": {
+    "**/app/**/page.tsx": "${dirname} | page.tsx",
+    "**/app/**/layout.tsx": "${dirname} | layout.tsx",
+    "**/app/**/error.tsx": "${dirname} | error.tsx",
+    "**/app/**/not-found.tsx": "${dirname} | not-found.tsx",
+    "**/app/**/loading.tsx": "${dirname} | loading.tsx"
+  },
+  "editor.codeActionsOnSave": [
+    "source.addMissingImports",
+    // "source.fixAll.eslint",
+    "source.fixAll.prettier"
+  ],
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["tw\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cnBase\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ]
+}
