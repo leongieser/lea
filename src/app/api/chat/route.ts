@@ -1,8 +1,23 @@
 import { NextRequest } from 'next/server';
-import { HumanMessage } from '@langchain/core/messages';
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+  trimMessages,
+} from '@langchain/core/messages';
+import { StringOutputParser } from '@langchain/core/output_parsers';
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from '@langchain/core/prompts';
 import { ChatOpenAI } from '@langchain/openai';
 
-const runLLMChain = async (message: string) => {
+export async function POST(req: NextRequest) {
+  // const { message, mode, chatId } = await req.json();
+  const { message } = await req.json();
+
+  // if (!mode) mode = 'chat';
+
   const encoder = new TextEncoder();
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
@@ -11,6 +26,7 @@ const runLLMChain = async (message: string) => {
     model: 'gpt-4o-mini',
     streaming: true,
     openAIApiKey: process.env.OPENAI_API_KEY,
+    verbose: process.env.NODE_ENV === 'development',
     callbacks: [
       {
         async handleLLMNewToken(token) {
@@ -25,16 +41,32 @@ const runLLMChain = async (message: string) => {
     ],
   });
 
-  model.invoke([new HumanMessage(message)]);
+  // get chats
 
-  return stream.readable;
-};
+  const chatHistory = [
+    new SystemMessage({ content: 'Welcome to the chat' }),
+    new HumanMessage({ content: 'Hello' }),
+    new AIMessage({ content: 'Hello, how can I help you today?' }),
+    new HumanMessage({ content: 'My name is Leon' }),
+    new AIMessage({ content: 'ok' }),
+  ];
 
-export async function POST(req: NextRequest) {
-  const { message } = await req.json();
+  const selectedMessages = await trimMessages(chatHistory, {
+    tokenCounter: model,
+    maxTokens: 80,
+    startOn: 'human',
+    strategy: 'last',
+    includeSystem: true,
+  });
 
-  console.log('message', message);
+  const prompt = ChatPromptTemplate.fromMessages([
+    new MessagesPlaceholder('chatHistory'),
+    ['human', message],
+  ]);
 
-  const stream = runLLMChain(message);
-  return new Response(await stream);
+  const parser = new StringOutputParser();
+  const chain = prompt.pipe(model).pipe(parser);
+
+  chain.invoke({ chatHistory: selectedMessages });
+  return new Response(stream.readable);
 }
