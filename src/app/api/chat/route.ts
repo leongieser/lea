@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import prisma from '@/lib/db';
 import {
   AIMessage,
   HumanMessage,
@@ -13,43 +14,91 @@ import {
 import { ChatOpenAI } from '@langchain/openai';
 
 export async function POST(req: NextRequest) {
-  // const { message, mode, chatId } = await req.json();
-  const { message } = await req.json();
+  const { message, chatId } = await req.json();
 
-  // if (!mode) mode = 'chat';
+  console.log('message', message);
+  console.log('chatId', chatId);
+
+  const data = await prisma.message.create({
+    data: {
+      content: message,
+      role: 'user',
+      chat: {
+        connect: {
+          id: chatId,
+        },
+      },
+    },
+    include: {
+      chat: {
+        include: {
+          messages: true,
+        },
+      },
+    },
+  });
 
   const encoder = new TextEncoder();
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
 
+  const abortController = new AbortController();
+  const { signal } = abortController;
+
+  signal.addEventListener('abort', async () => {
+    await writer.close();
+  });
+
+  let responseContent = '';
+
   const model = new ChatOpenAI({
     model: 'gpt-4o-mini',
     streaming: true,
     openAIApiKey: process.env.OPENAI_API_KEY,
-    verbose: process.env.NODE_ENV === 'development',
+    // verbose: process.env.NODE_ENV === 'development',
     callbacks: [
       {
         async handleLLMNewToken(token) {
+          responseContent += token;
           await writer.ready;
           await writer.write(encoder.encode(`${token}`));
         },
         async handleLLMEnd() {
           await writer.ready;
           await writer.close();
+
+          await prisma.message.create({
+            data: {
+              content: responseContent,
+              role: 'ai',
+              chat: {
+                connect: {
+                  id: chatId,
+                },
+              },
+            },
+          });
         },
       },
     ],
   });
 
-  // get chats
-
-  const chatHistory = [
-    new SystemMessage({ content: 'Welcome to the chat' }),
-    new HumanMessage({ content: 'Hello' }),
-    new AIMessage({ content: 'Hello, how can I help you today?' }),
-    new HumanMessage({ content: 'My name is Leon' }),
-    new AIMessage({ content: 'ok' }),
-  ];
+  // This is probably terrible for performance
+  // but i did not have the time to get into how to set up redis with langchain
+  // since v3 is heavily based on LangGraph which would take away a lot of the complexity
+  // so that was a nono for the assignment
+  const chatHistory = data.chat.messages.map((message) => {
+    switch (message.role) {
+      case 'system':
+        return new SystemMessage({ content: message.content });
+      case 'user':
+        return new HumanMessage({ content: message.content });
+      case 'ai':
+        return new AIMessage({ content: message.content });
+      default:
+        return new HumanMessage({ content: message.content });
+    }
+  });
 
   const selectedMessages = await trimMessages(chatHistory, {
     tokenCounter: model,

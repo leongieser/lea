@@ -1,21 +1,69 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
-export const createChat = async (data: FormData) => {
-  if (!data.get('message')) {
-    return;
+import prisma from '../db';
+
+export async function createChat(data: FormData) {
+  // TODO cs / ss validation share zod schema
+  const message = data.get('message') as string;
+
+  let chat;
+
+  try {
+    chat = await prisma.chat.create({
+      data: {
+        title: message.slice(0, 20) + '...',
+        messages: {
+          create: [{ content: message, role: 'user' }],
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Failed to create chat', error);
+    redirect(`/?toast=failed-to-create-chat`);
   }
 
-  console.log(data.get('message'));
-  const chatId = '1';
+  redirect(`/c/${chat.id}`);
+}
 
-  redirect(`/c/${chatId}`);
-};
+export async function deleteChat(chatId: string) {
+  try {
+    await prisma.chat.delete({ where: { id: chatId } });
+  } catch (error) {
+    console.error('Chat not found', error);
+    redirect(`/c/${chatId}`);
+  }
 
-export const deleteChat = async (chatId: string) => {
-  console.log(chatId);
+  redirect(`/`);
+}
 
-  redirect('/');
-  //TODO
-};
+export async function getChat(chatId: string) {
+  let chat;
+
+  try {
+    chat = await prisma.chat.findUniqueOrThrow({
+      where: { id: chatId },
+      include: { messages: true },
+    });
+  } catch (error) {
+    console.error(error);
+    notFound();
+    // TODO rediret to home +toast is better ux
+  }
+
+  return chat;
+}
+
+export async function getChats() {
+  let chats;
+
+  try {
+    chats = await prisma.chat.findMany();
+  } catch (error) {
+    console.error(error);
+    notFound();
+  }
+
+  return chats;
+}
