@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-// import { usePathname } from 'next/navigation';
 import { deleteChat } from '@/lib/chat';
 import { cn } from '@/utils';
 import * as Popover from '@radix-ui/react-popover';
@@ -25,11 +24,9 @@ export default function ChatNavLink({
       key={chatId}
       className="group flex w-full items-center justify-between transition-colors duration-200 hover:bg-zinc-600"
     >
-      {isActive && (
-        <span
-          className={cn('h-full w-2', isActive ? 'bg-zinc-100' : 'bg-none')}
-        />
-      )}
+      <span
+        className={cn('h-full w-2', isActive ? 'bg-zinc-100' : 'bg-none')}
+      />
 
       <Link
         className="text-md w-full flex-grow truncate py-2 pl-4 font-normal"
@@ -62,7 +59,6 @@ export default function ChatNavLink({
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
-      {/* // TODO delete popover */}
     </li>
   );
 }

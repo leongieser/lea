@@ -9,9 +9,5 @@ export default async function ChatPage({
 }) {
   const chat = await getChat(chatId);
 
-  return (
-    <>
-      <Chat chatHistory={chat.messages} chatId={chatId} />;
-    </>
-  );
+  return <Chat chatHistory={chat.messages} chatId={chatId} />;
 }

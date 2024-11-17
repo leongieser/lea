@@ -2,7 +2,7 @@
 
 import type { Message } from '@prisma/client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cn } from '@/utils';
 import { SendHorizontal, StopCircleIcon } from 'lucide-react';
 
@@ -34,7 +34,7 @@ import { SendHorizontal, StopCircleIcon } from 'lucide-react';
  * in memory client side chat history.
  * Refreshing the page will cause the server component to get the updated chat history and pass it into the client component
  *
- * i ran into some scrollbar chaos in the end and really did not have the nerve to fix it. soooorrry
+ * i ran into some scrollbar chaos in the end and really did not have the nerve to fix it. so
  */
 export const Chat = ({
   chatHistory,
@@ -52,6 +52,7 @@ export const Chat = ({
   const [controller, setController] = useState<AbortController | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const hasSentInitalMessage = useRef(false);
+
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -60,23 +61,31 @@ export const Chat = ({
       });
     }
   };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamResponse]);
+
+  useLayoutEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, []);
 
   useEffect(() => {
     const checkOverflow = () => {
       const container = messagesContainerRef.current;
       if (container) {
         if (container.scrollHeight > container.clientHeight) {
-          setPaddingClass('pl-4');
+          setPaddingClass('p-4');
         } else {
-          setPaddingClass('pr-0');
+          setPaddingClass('pl-0');
         }
       }
     };
     checkOverflow();
-    scrollToBottom();
+
     window.addEventListener('resize', checkOverflow);
     return () => {
       window.removeEventListener('resize', checkOverflow);
@@ -211,19 +220,19 @@ export const Chat = ({
   };
 
   return (
-    <main className="container flex max-h-full flex-col gap-4 bg-zinc-800 px-4 py-4 md:px-0">
+    <main className="flex w-full flex-col gap-4 bg-zinc-800 px-4 py-4 md:px-0">
       <section
         ref={messagesContainerRef}
         className={cn(
-          'scrollbar-custom flex h-full max-h-full w-full items-end overflow-y-auto',
+          'scrollbar-custom flex h-full w-full items-end overflow-y-scroll',
           paddingClass
         )}
       >
-        <ol className="mx-auto flex min-h-full w-full max-w-screen-sm flex-col justify-end gap-2">
+        <ol className="mx-auto max-h-full w-full max-w-screen-sm">
           {messages.map((message) => (
             <li
               className={cn(
-                'relative flex w-full',
+                'relative mb-4 flex w-full',
                 message.role !== 'user' && 'justify-end'
               )}
               key={message.id}
