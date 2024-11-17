@@ -20,6 +20,7 @@ export const Chat = ({
   const [newMessage, setNewMessage] = useState('');
   const [streamResponse, setStreamResponse] = useState('');
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [paddingClass, setPaddingClass] = useState('pl-0');
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -29,6 +30,28 @@ export const Chat = ({
       });
     }
   };
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      const container = messagesContainerRef.current;
+      if (container) {
+        if (
+          container.scrollHeight > container.clientHeight ||
+          container.scrollWidth > container.clientWidth
+        ) {
+          setPaddingClass('pl-4');
+        } else {
+          setPaddingClass('pr-0');
+        }
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => {
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, []);
 
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -99,8 +122,14 @@ export const Chat = ({
   };
 
   return (
-    <div className="container flex h-full flex-col items-center justify-start gap-6 bg-teal-400 py-4">
-      <section ref={messagesContainerRef} className="container overflow-y-auto">
+    <div className="container flex h-full flex-col items-center justify-start gap-6 py-4">
+      <section
+        ref={messagesContainerRef}
+        className={cn(
+          'container overflow-y-auto [&::-webkit-scrollbar-track]:bg-zinc-800',
+          paddingClass
+        )}
+      >
         <ol className="mx-auto flex max-w-screen-sm flex-col gap-2">
           {messages.map((message) => (
             <li

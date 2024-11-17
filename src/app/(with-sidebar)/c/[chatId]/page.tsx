@@ -19,7 +19,7 @@ export default async function ChatPage({
   // TODO get existing chat messages
   // TODO create client message form
   return (
-    <div className="container flex h-full flex-col-reverse items-center justify-center bg-teal-400">
+    <div className="container flex h-full flex-col-reverse items-center justify-center bg-zinc-800">
       <Chat chatHistory={messages} chatId={chatId} />
     </div>
   );
