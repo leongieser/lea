@@ -5,6 +5,7 @@ import type { Message } from '@prisma/client';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cn } from '@/utils';
 import { SendHorizontal, StopCircleIcon } from 'lucide-react';
+import Markdown from 'markdown-to-jsx';
 
 /**
  *
@@ -35,6 +36,11 @@ import { SendHorizontal, StopCircleIcon } from 'lucide-react';
  * Refreshing the page will cause the server component to get the updated chat history and pass it into the client component
  *
  * i ran into some scrollbar chaos in the end and really did not have the nerve to fix it.
+ *
+ * edit:
+ * i made somadjsutedments to the api route.
+ * the chatId is now being passed as a param so the intial answer stream can be started via a get request
+ *
  */
 
 export const Chat = ({
@@ -53,6 +59,7 @@ export const Chat = ({
   const [controller, setController] = useState<AbortController | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const hasSentInitalMessage = useRef(false);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
     if (messagesContainerRef.current) {
@@ -73,6 +80,7 @@ export const Chat = ({
       }
     };
     checkOverflow();
+    textAreaRef.current?.focus();
 
     window.addEventListener('resize', checkOverflow);
     return () => {
@@ -191,6 +199,7 @@ export const Chat = ({
             role: 'ai',
           },
         ]);
+        textAreaRef.current?.focus();
         break;
       }
 
@@ -218,7 +227,7 @@ export const Chat = ({
   };
 
   return (
-    <main className="flex min-h-screen w-full flex-grow flex-col gap-4 bg-zinc-800 px-4 py-4 md:px-0">
+    <main className="flex min-h-screen w-full flex-grow flex-col gap-4 bg-zinc-800 px-4 py-4 lg:px-0">
       <section
         ref={messagesContainerRef}
         className={cn(
@@ -227,27 +236,40 @@ export const Chat = ({
         )}
       >
         <ol className="mx-auto max-h-full w-full max-w-screen-sm">
-          {messages.map((message) => (
-            <li
-              className={cn(
-                'relative mb-4 flex w-full',
-                message.role !== 'user' && 'justify-end'
-              )}
-              key={message.id}
-            >
-              <span className="relative overflow-hidden rounded-md bg-zinc-600 px-4 py-2 text-white">
-                {message.content}
-                <span
-                  className={cn(
-                    'absolute h-full w-2',
-                    message.role !== 'user'
-                      ? 'right-0 top-0 bg-teal-400'
-                      : 'left-0 top-0 bg-fuchsia-400'
-                  )}
-                />
-              </span>
-            </li>
-          ))}
+          {messages.map((message) => {
+            return (
+              <li
+                className={cn(
+                  'relative mb-4 flex w-full',
+                  message.role !== 'user' && 'justify-end'
+                )}
+                key={message.id}
+              >
+                {message.role === 'user' ? (
+                  <span className="relative overflow-hidden rounded-md bg-zinc-600 px-4 py-2 text-white">
+                    {message.content}
+                    <span
+                      className={cn(
+                        'absolute h-full w-2',
+                        'left-0 top-0 bg-fuchsia-400'
+                      )}
+                    />
+                  </span>
+                ) : (
+                  <span className="relative overflow-hidden rounded-md bg-zinc-600 px-4 py-2 text-white">
+                    <Markdown>{message.content}</Markdown>
+                    <span
+                      className={cn(
+                        'absolute h-full w-2',
+                        'right-0 top-0 bg-teal-400'
+                      )}
+                    />
+                  </span>
+                )}
+              </li>
+            );
+          })}
+          ;
           {isThinking && (
             // TODO make pretty
             <li className="flex w-full justify-end pt-4">
@@ -277,6 +299,7 @@ export const Chat = ({
         className="mx-auto mt-auto flex w-full max-w-screen-sm self-stretch rounded-md bg-zinc-900 text-zinc-100"
       >
         <textarea
+          ref={textAreaRef}
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           name="message"

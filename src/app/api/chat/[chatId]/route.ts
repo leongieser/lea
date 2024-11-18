@@ -206,6 +206,9 @@ export async function GET(
   });
 
   const prompt = ChatPromptTemplate.fromMessages([
+    new SystemMessage({
+      content: 'If possible your output should be in markdown',
+    }),
     new MessagesPlaceholder('chatHistory'),
   ]);
 
